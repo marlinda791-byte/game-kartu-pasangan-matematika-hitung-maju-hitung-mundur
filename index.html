@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4338ca">
+<title>Padanan Memori Matematika - Kelas 1 SD</title>
+<style>
+:root{--ink:#172554;--purple:#4f46e5;--purple2:#7c3aed;--paper:#f8fafc;--green:#dcfce7;--gold:#fbbf24}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#e0f2fe,#ede9fe);color:var(--ink);min-height:100vh}
+main{max-width:900px;margin:auto}
+.hero{background:linear-gradient(120deg,#2563eb,#7c3aed);color:#fff;border-radius:22px;padding:24px 16px;text-align:center;box-shadow:0 8px 22px #312e8140}
+.hero .emoji{font-size:46px}.hero h1{font-size:clamp(25px,5vw,38px);margin:8px 0}.hero p{margin:8px 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.stat{background:#fff;border:1px solid #dbeafe;border-radius:15px;padding:12px;text-align:center;box-shadow:0 3px 10px #1e3a8a12}
+.stat span{display:block;font-size:14px}.stat strong{display:block;font-size:28px;margin-top:4px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.notice{background:#fff;border:2px solid #c7d2fe;border-radius:15px;padding:14px;text-align:center;font-weight:bold;min-height:52px;margin:12px 0}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.card{border:3px solid #c4b5fd;border-radius:16px;min-height:115px;background:linear-gradient(145deg,#6366f1,#8b5cf6);color:white;box-shadow:0 4px 0 #4338ca;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px;touch-action:manipulation;transition:transform .12s}
+.card:active{transform:scale(.97)}.card .face{font-size:clamp(26px,5vw,40px);font-weight:900;line-height:1.2}.card .caption{font-size:12px;font-weight:bold}
+.card.open{background:#fff;color:#172554;border-color:#fbbf24;box-shadow:0 4px 0 #d97706}
+.card.matched{background:#dcfce7;color:#166534;border-color:#22c55e;box-shadow:0 4px 0 #15803d;cursor:default}
+.card:disabled{opacity:1}
+button:focus-visible{outline:4px solid #f59e0b;outline-offset:3px}
+.actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+button.action{border:0;border-radius:12px;padding:13px 18px;font-weight:bold;font-size:15px;cursor:pointer;background:#2563eb;color:#fff}
+button.secondary{border:1px solid #cbd5e1;border-radius:12px;padding:12px 16px;font-weight:bold;font-size:14px;cursor:pointer;background:#fff;color:#172554}
+.instructions,.result{background:#fff;border:1px solid #dbeafe;border-radius:16px;padding:16px;margin-top:16px}
+.instructions h2{font-size:19px;margin:0 0 8px}.instructions ol{margin:8px 0;padding-left:22px;line-height:1.7}
+.result{text-align:center;background:#f0fdf4;border:2px solid #86efac}.result .trophy{font-size:48px}
+footer{text-align:center;font-size:12px;color:#475569;margin:18px 0 4px}
+@media(max-width:560px){body{padding:12px}.board{gap:8px}.card{min-height:91px;border-radius:12px;padding:5px}.card .caption{font-size:10px}.stats{gap:7px}.stat{padding:9px 4px}.stat strong{font-size:24px}}
+@media(max-width:360px){.board{grid-template-columns:repeat(3,minmax(0,1fr))}.card{min-height:100px}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+</head>
+<body>
+<main>
+ <header class="hero">
+  <div class="emoji" aria-hidden="true">🧠 🎲 🔢</div>
+  <h1>PADANAN MEMORI</h1>
+  <p><strong>Ayo Membilang 1 sampai 10!</strong></p>
+  <p>Temukan pasangan angka dan jumlah benda yang tepat.</p>
+  <p>📚 MATEMATIKA • KELAS 1 SD</p>
+ </header>
+
+ <section class="stats" aria-label="Statistik permainan">
+  <div class="stat"><span>👣 Langkah</span><strong id="steps">0</strong></div>
+  <div class="stat"><span>⭐ Skor</span><strong id="score">0</strong></div>
+  <div class="stat"><span>🏆 Pasangan</span><strong id="pairs">0/10</strong></div>
+ </section>
+
+ <div class="toolbar">
+  <strong>🎯 Temukan 10 pasangan kartu!</strong>
+  <button class="secondary" id="soundButton" type="button" aria-pressed="true">🔊 Suara: Aktif</button>
+ </div>
+ <div class="notice" id="message" role="status" aria-live="polite">🌟 Ayo mulai! Pilih dua kartu untuk menemukan pasangan.</div>
+ <section class="board" id="board" aria-label="Papan kartu memori"></section>
+
+ <div class="actions">
+  <button class="action" id="restartButton" type="button">🔄 Main Lagi</button>
+  <button class="secondary" id="hintButton" type="button">💡 Petunjuk</button>
+ </div>
+
+ <section class="result" id="result" hidden>
+  <div class="trophy">🏆🎉🌟</div>
+  <h2>HEBAT SEKALI!</h2>
+  <p>Kamu berhasil menemukan semua pasangan!</p>
+  <strong id="finalScore"></strong>
+  <div class="actions"><button class="action" id="againButton" type="button">🔄 Bermain Kembali</button></div>
+ </section>
+
+ <section class="instructions">
+  <h2>📖 Cara Bermain</h2>
+  <ol>
+   <li>Tekan satu kartu untuk membukanya.</li>
+   <li>Tekan kartu kedua untuk mencari pasangan.</li>
+   <li>Cocokkan angka dengan jumlah benda yang sesuai.</li>
+   <li>Setiap pasangan benar mendapat 10 poin.</li>
+   <li>Temukan seluruh 10 pasangan dan raih bintang!</li>
+  </ol>
+  <p><strong>Tujuan belajar:</strong> Mengenal lambang bilangan 1–10, menghitung benda, serta memahami urutan bilangan untuk hitung maju dan hitung mundur.</p>
+ </section>
+ <footer>SD NEGERI 8 KODEOHA • BELAJAR SAMBIL BERMAIN ❤️</footer>
+</main>
+<script>
+(() => {
+ "use strict";
+ const data = [
+  [1,"🍎","Satu apel"],[2,"🐟🐟","Dua ikan"],[3,"🌸🌸🌸","Tiga bunga"],
+  [4,"⭐ ⭐ ⭐ ⭐","Empat bintang"],[5,"🍌🍌🍌🍌🍌","Lima pisang"],
+  [6,"⚽⚽⚽⚽⚽⚽","Enam bola"],[7,"🦋🦋🦋🦋🦋🦋🦋","Tujuh kupu-kupu"],
+  [8,"🍓🍓🍓🍓🍓🍓🍓🍓","Delapan stroberi"],
+  [9,"🐥🐥🐥🐥🐥🐥🐥🐥🐥","Sembilan anak ayam"],
+  [10,"🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈","Sepuluh balon"]
+ ];
+ const el = id => document.getElementById(id);
+ let deck=[], first=null, second=null, matched=new Set(), steps=0, score=0, sound=true, locked=false, mismatchTimer=null;
+
+ function playTone(freq=550,duration=.13){
+  if(!sound)return;
+  try{
+   const AudioCtx=window.AudioContext||window.webkitAudioContext;
+   if(!AudioCtx)return;
+   const ctx=new AudioCtx(),osc=ctx.createOscillator(),gain=ctx.createGain();
+   osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=freq;
+   gain.gain.setValueAtTime(.07,ctx.currentTime);
+   gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+duration);
+   osc.start();osc.stop(ctx.currentTime+duration);osc.onended=()=>ctx.close();
+  }catch(e){}
+ }
+ function shuffle(items){
+  for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]]}
+  return items;
+ }
+ function updateStats(){
+  el("steps").textContent=steps;el("score").textContent=score;el("pairs").textContent=matched.size+"/10";
+ }
+ function showMessage(text){el("message").textContent=text}
+ function makeDeck(){
+  deck=shuffle(data.flatMap(([n,face,label])=>[
+   {id:n,face:String(n),label:"Angka "+n,type:"angka"},
+   {id:n,face:face,label:label,type:"benda"}
+  ]));
+ }
+ function render(){
+  const board=el("board");board.innerHTML="";
+  deck.forEach((card,index)=>{
+   const isMatched=matched.has(card.id),isOpen=first===index||second===index;
+   const button=document.createElement("button");button.type="button";
+   button.className="card"+(isMatched?" matched":isOpen?" open":"");
+   button.disabled=isMatched||locked;
+   button.setAttribute("aria-label",isMatched||isOpen?card.label:"Kartu tertutup nomor "+(index+1));
+   if(isMatched||isOpen){
+    const face=document.createElement("span");face.className="face";face.textContent=card.face;
+    const caption=document.createElement("span");caption.className="caption";caption.textContent=card.label;
+    button.append(face,caption);
+   }else{
+    const face=document.createElement("span");face.className="face";face.textContent="❓";
+    const caption=document.createElement("span");caption.className="caption";caption.textContent="Buka kartu";
+    button.append(face,caption);
+   }
+   button.addEventListener("click",()=>flip(index));board.appendChild(button);
+  });
+  updateStats();
+ }
+ function finishIfDone(){
+  if(matched.size!==10)return false;
+  el("finalScore").textContent="Skor akhir: "+score+" poin • Langkah: "+steps;
+  el("result").hidden=false;showMessage("🏆 Luar biasa! Semua pasangan berhasil ditemukan!");
+  playTone(880,.35);return true;
+ }
+ function flip(index){
+  if(locked||matched.has(deck[index].id)||first===index||second===index)return;
+  if(first!==null&&second!==null){first=null;second=null;}
+  if(first===null){first=index;playTone(440);showMessage("Sekarang pilih kartu kedua!");render();return;}
+  second=index;steps++;
+  const a=deck[first],b=deck[second];
+  if(a.id===b.id&&a.type!==b.type){
+   matched.add(a.id);score+=10;playTone(760,.22);
+   showMessage("🎉 Hebat! "+a.label+" cocok dengan angka "+a.id+"! +10 poin.");
+   first=null;second=null;render();finishIfDone();return;
+  }
+  locked=true;playTone(230,.18);
+  showMessage("😊 Belum cocok! Ingat kedua kartu, lalu coba lagi.");
+  render();
+  mismatchTimer=window.setTimeout(()=>{
+   first=null;second=null;locked=false;render();
+   showMessage("🔎 Coba lagi! Temukan pasangan yang tepat.");
+  },1050);
+ }
+ function startGame(){
+  if(mismatchTimer)clearTimeout(mismatchTimer);
+  mismatchTimer=null;locked=false;first=null;second=null;matched=new Set();steps=0;score=0;
+  el("result").hidden=true;makeDeck();showMessage("🌟 Ayo mulai! Pilih dua kartu untuk menemukan pasangan.");render();
+ }
+ el("restartButton").addEventListener("click",startGame);
+ el("againButton").addEventListener("click",startGame);
+ el("soundButton").addEventListener("click",()=>{
+  sound=!sound;el("soundButton").textContent=sound?"🔊 Suara: Aktif":"🔇 Suara: Mati";
+  el("soundButton").setAttribute("aria-pressed",String(sound));if(sound)playTone(650);
+ });
+ el("hintButton").addEventListener("click",()=>{
+  const remaining=data.filter(item=>!matched.has(item[0]));
+  if(!remaining.length)return;
+  const choice=remaining[Math.floor(Math.random()*remaining.length)];
+  showMessage("💡 Petunjuk: Cari angka "+choice[0]+" yang cocok dengan "+choice[2].toLowerCase()+"!");
+  playTone(520);
+ });
+ startGame();
+})();
+</script>
+</body>
+</html>
